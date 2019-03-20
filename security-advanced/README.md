@@ -322,19 +322,20 @@ sudo update-ca-trust check
    ```
 
 3. Test certificate & name resolution with `ldapsearch`
-
+  - Update ldap.conf with our defaults
    ```
-## Update ldap.conf with our defaults
 sudo tee -a /etc/openldap/ldap.conf > /dev/null << EOF
 TLS_CACERT /etc/pki/tls/cert.pem
 URI ldaps://ad01.lab.hortonworks.net ldap://ad01.lab.hortonworks.net
 BASE dc=lab,dc=hortonworks,dc=net
 EOF
-
-##test connection to AD using openssl client
+   ```
+  - test connection to AD using openssl client
+   ```
 openssl s_client -connect ad01:636 </dev/null
-
-## test connection to AD using ldapsearch (when prompted for password, enter: BadPass#1)
+   ```
+  - test connection to AD using ldapsearch (when prompted for password, enter: BadPass#1)
+   ```
 ldapsearch -W -D ldap-reader@lab.hortonworks.net
    ```
 
@@ -345,7 +346,7 @@ ldapsearch -W -D ldap-reader@lab.hortonworks.net
 
 Run below on only Ambari node:
 
-- Add your AD properties as defaults for Ambari LDAP sync into the bottom of ambari.properties  
+1. Add your AD properties as defaults for Ambari LDAP sync into the bottom of ambari.properties  
   - The below commands are just appending the authentication properties to bottom of the ambari.properties file. If you prefer, you can manually edit the file too
   ```
 ad_dc="ad01.lab.hortonworks.net"
@@ -368,26 +369,26 @@ EOF
 
   ```
 
-- Make sure the above LDAP authentication entries were added to ambari.properties
+2. Make sure the above LDAP authentication entries were added to ambari.properties
 
   ```
   tail -n 20 /etc/ambari-server/conf/ambari.properties 
   ```  
-- Run Ambari LDAP sync. 
- - Run below to setup AD sync. 
- - Press *enter key* at each prompt to accept the default value being displayed
- - When prompted for 'Manager Password' at the end, enter password : BadPass#1
+3. Run Ambari LDAP sync. 
+  - Run below to setup AD sync. 
+  - Press *enter key* at each prompt to accept the default value being displayed
+  - When prompted for 'Manager Password' at the end, enter password : BadPass#1
   ```
   sudo ambari-server setup-ldap
   ```
    ![Image](https://raw.githubusercontent.com/seanorama/masterclass/master/security-advanced/screenshots/Ambari-setup-LDAP.png)
 
-- Restart Ambari server. When you do this, the agent will likely go down so restart it as well.
+4. Restart Ambari server. When you do this, the agent will likely go down so restart it as well.
   ```
    sudo ambari-server restart
    sudo ambari-agent restart
   ```
-- Run LDAPsync to sync only the groups we want
+5. Run LDAPsync to sync only the groups we want
   - When prompted for user/password, use the *local* Ambari admin credentials (i.e. admin/BadPass#1)
   ```
   echo hadoop-users,hr,sales,legal,hadoop-admins > groups.txt
@@ -397,7 +398,7 @@ EOF
   - This should show a summary of what objects were created
   ![Image](https://raw.githubusercontent.com/seanorama/masterclass/master/security-advanced/screenshots/Ambari-run-LDAPsync.png)
   
-- Give 'hadoop-admin' admin permissions in Ambari to allow the user to manage the cluster
+6. Give 'hadoop-admin' admin permissions in Ambari to allow the user to manage the cluster
   - Login to Ambari as your local 'admin' user (i.e. admin/BadPass#1)
   - Grant 'hadoopadmin' user permissions to manage the cluster:
     - Click the dropdown on top right of Ambari UI
@@ -406,9 +407,9 @@ EOF
     - Change 'Ambari Admin' to Yes 
     ![Image](https://raw.githubusercontent.com/seanorama/masterclass/master/security-advanced/screenshots/Ambari-make-user-admin.png)    
     
-- Sign out and then log back into Ambari, this time as 'hadoopadmin' and verify the user has rights to monitor/manage the cluster
+7. Sign out and then log back into Ambari, this time as 'hadoopadmin' and verify the user has rights to monitor/manage the cluster
 
-- (optional) Disable local 'admin' user using the same 'Manage Ambari' menu
+8. (optional) Disable local 'admin' user using the same 'Manage Ambari' menu
 
 # Lab 3
  
@@ -1032,15 +1033,16 @@ Prepare MySQL DB for Ranger use.
 - `sudo mysql`
 - Execute following in the MySQL shell. Change the password to your preference. 
 
-    ```sql
-CREATE USER 'root'@'%';
-GRANT ALL PRIVILEGES ON *.* to 'root'@'%' WITH GRANT OPTION;
-SET PASSWORD FOR 'root'@'%' = PASSWORD('BadPass#1');
-SET PASSWORD = PASSWORD('BadPass#1');
-FLUSH PRIVILEGES;
-exit
-```
+  ```
+  CREATE USER 'root'@'%';
+  GRANT ALL PRIVILEGES ON *.* to 'root'@'%' WITH GRANT OPTION;
+  SET PASSWORD FOR 'root'@'%' = PASSWORD('BadPass#1');
+  SET PASSWORD = PASSWORD('BadPass#1');
+  FLUSH PRIVILEGES;
+  exit
+  ```
 
+    
 - Confirm MySQL user: `mysql -u root -h $(hostname -f) -p -e "select count(user) from mysql.user;"`
   - Output should be a simple count. Check the last step if there are errors.
 
@@ -1048,7 +1050,7 @@ exit
 - Run this on Ambari node
 - Add MySQL JAR to Ambari:
   - `sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar`
-    - If the file is not present, it is available on RHEL/CentOS with: `sudo yum -y install mysql-connector-java`
+   - If the file is not present, it is available on RHEL/CentOS with: `sudo yum -y install mysql-connector-java`
 
 ##### Install SolrCloud from HDPSearch for Audits (if not already installed)
 
